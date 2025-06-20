@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: "https://bug-tracker-dgsx.onrender.com" || 'http://localhost:5003/api',
+  baseURL: "https://bug-tracker-dgsx.onrender.com/api", // ✅ Fixed
   headers: {
     'Content-Type': 'application/json',
   },
