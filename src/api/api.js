@@ -1,8 +1,10 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5003/api',
-  withCredentials: true
+  baseURL: "https://bug-tracker-dgsx.onrender.com" || 'http://localhost:5003/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 API.interceptors.request.use((config) => {
