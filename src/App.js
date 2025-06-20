@@ -11,7 +11,9 @@ import TicketList from './components/TicketList';
 import LoginForm from './components/LoginForm';
 import Dashboard from './pages/Dashboard';
 import ProjectPage from './pages/ProjectPage';
-import KanbanBoard from './components/KanbanBoard'; // Import your KanbanBoard component
+import KanbanBoard from './components/KanbanBoard';
+import { ToastContainer } from 'react-toastify'; // <-- Import ToastContainer
+import 'react-toastify/dist/ReactToastify.css';   // <-- Import Toastify CSS
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -103,6 +105,7 @@ function App() {
             }
           />
         </Routes>
+        <ToastContainer /> {/* <-- Add ToastContainer here */}
       </div>
     </Router>
   );

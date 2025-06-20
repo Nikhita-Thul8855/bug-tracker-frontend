@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/api';
 import TicketForm from './TicketForm';
+import Loader from './Loader';
+import { toast } from 'react-toastify'; // <-- Import toast
 
 const TicketList = ({ projectId }) => {
   const [tickets, setTickets] = useState([]);
@@ -9,12 +11,13 @@ const TicketList = ({ projectId }) => {
   const [assigneeFilter, setAssigneeFilter] = useState('');
   const [search, setSearch] = useState('');
   const [editingTicket, setEditingTicket] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Get current user ID (assumes you store it in localStorage after login)
   const currentUserId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchTickets = async () => {
+      setLoading(true);
       try {
         const params = new URLSearchParams();
         if (statusFilter) params.append('status', statusFilter);
@@ -25,8 +28,9 @@ const TicketList = ({ projectId }) => {
         const res = await api.get(`/tickets/project/${projectId}?${params.toString()}`);
         setTickets(res.data);
       } catch (err) {
-        // Optionally handle error
+        toast.error('❌ Failed to fetch tickets.');
       }
+      setLoading(false);
     };
     if (projectId) fetchTickets();
   }, [projectId, statusFilter, priorityFilter, assigneeFilter, search, editingTicket]);
@@ -37,13 +41,12 @@ const TicketList = ({ projectId }) => {
     try {
       await api.delete(`/tickets/${ticketId}`);
       setTickets(tickets.filter(ticket => ticket._id !== ticketId));
-      alert('✅ Ticket deleted.');
+      toast.success('✅ Ticket deleted.');
     } catch (err) {
-      alert('❌ Failed to delete ticket.');
+      toast.error('❌ Failed to delete ticket.');
     }
   };
 
-  // Get unique assignees for the dropdown (use name or email if available)
   const assignees = [
     ...new Set(
       tickets
@@ -57,11 +60,11 @@ const TicketList = ({ projectId }) => {
   ];
 
   if (!projectId) return <div>Select a project to view tickets.</div>;
+  if (loading) return <Loader />;
 
   return (
-    <div>
-      <h2 className="text-lg font-semibold mb-2">Tickets</h2>
-      {/* Search bar */}
+    <div className="p-4 max-w-lg mx-auto w-full sm:w-1/2">
+      <h2 className="text-xl font-bold mb-4">Tickets</h2>
       <input
         type="text"
         placeholder="Search tickets..."
@@ -69,21 +72,20 @@ const TicketList = ({ projectId }) => {
         onChange={e => setSearch(e.target.value)}
         className="mb-4 p-2 border rounded w-full"
       />
-      {/* Dropdown filters */}
-      <div className="flex space-x-2 mb-4">
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+      <div className="flex flex-col sm:flex-row sm:space-x-2 mb-4 space-y-2 sm:space-y-0">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="p-2 border rounded">
           <option value="">All Statuses</option>
           <option value="To Do">To Do</option>
           <option value="In Progress">In Progress</option>
           <option value="Done">Done</option>
         </select>
-        <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+        <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} className="p-2 border rounded">
           <option value="">All Priorities</option>
           <option value="Low">Low</option>
           <option value="Medium">Medium</option>
           <option value="High">High</option>
         </select>
-        <select value={assigneeFilter} onChange={e => setAssigneeFilter(e.target.value)}>
+        <select value={assigneeFilter} onChange={e => setAssigneeFilter(e.target.value)} className="p-2 border rounded">
           <option value="">All Assignees</option>
           {assignees.map(assignee => (
             <option key={assignee} value={assignee}>{assignee}</option>
@@ -105,7 +107,6 @@ const TicketList = ({ projectId }) => {
                     : ticket.assignedTo || 'Unassigned'
                 }
               </div>
-              {/* Only allow creator to edit/delete */}
               {String(ticket.creator) === String(currentUserId) && (
                 <>
                   <button
